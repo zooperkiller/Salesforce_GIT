@@ -1,0 +1,41 @@
+@Description: Count the number of contacts whenever any contact is updated 
+and update the count in a account custom field.//
+
+
+Set<Id> setOfAccountId = new Set<Id>();
+    
+    if(trigger.isAfter && trigger.IsUpdate){
+        if(!trigger.new.isEmpty()){
+            
+            for(Contact con : trigger.new){
+                setOfAccountId.add(con.AccountId);
+            }
+            system.debug('@@setOfAccountId'+setOfAccountId);
+            
+            List<AggregateResult> aggrResult = [Select AccountId, count(Id) ids 
+                                                from Contact where AccountId In:SetOfAccountId 
+                                                Group BY AccountId];
+            
+            system.debug('@@aggrResult'+aggrResult);
+            
+            Map<id, Integer> MapofNumberOfContact = new Map<id,Integer>();
+            for(AggregateResult agg : aggrResult){
+                MapofNumberOfContact.put((Id)agg.get('AccountId'),(integer)agg.get('ids'));
+            }
+            system.debug('@@MapofNumberOfContact'+MapofNumberOfContact);
+            
+            list<Account> accountsToUpdate = new List<Account>();
+            
+            for(Id accountId : MapofNumberOfContact.keySet()){
+                Account accToUpdate  = new Account();
+                accToUpdate.Id = accountId;
+                accToUpdate.Number_Of_contacts__c = MapofNumberOfContact.get(accountId);
+                accountsToUpdate.add(accToUpdate);
+                
+            }
+            
+            if(!accountsToUpdate.isEmpty()){
+                Update accountsToUpdate;
+            }
+        }
+    }
