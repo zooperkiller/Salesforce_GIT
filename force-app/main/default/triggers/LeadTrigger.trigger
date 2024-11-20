@@ -1,3 +1,4 @@
+//21-11-2024
 trigger LeadTrigger on Lead (before insert) {
 
     if(trigger.isBefore && trigger.isInsert){
